@@ -54,7 +54,12 @@ function getClientIpFromXForwardedFor(value) {
  */
 function getClientIp(req) {
     // Server is probably behind a proxy.
-    if (req.headers) {
+    if (req.headers) {       
+        // Akamai and Cloudflare: True-Client-IP.
+        if (is.ip(req.headers['true-client-ip'])) {
+            return req.headers['true-client-ip'];
+        }
+
         // Standard headers used by Amazon EC2, Heroku, and others.
         if (is.ip(req.headers['x-client-ip'])) {
             return req.headers['x-client-ip'];
@@ -85,11 +90,6 @@ function getClientIp(req) {
         // Fastly and Firebase hosting header (When forwared to cloud function)
         if (is.ip(req.headers['fastly-client-ip'])) {
             return req.headers['fastly-client-ip'];
-        }
-
-        // Akamai and Cloudflare: True-Client-IP.
-        if (is.ip(req.headers['true-client-ip'])) {
-            return req.headers['true-client-ip'];
         }
 
         // Default nginx proxy/fcgi; alternative to x-forwarded-for, used by some proxies.
